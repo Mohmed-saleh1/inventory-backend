@@ -6,6 +6,7 @@ import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.enableCors();
   // Swagger Configuration
   const config = new DocumentBuilder()
     .setTitle('Product API')

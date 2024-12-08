@@ -26,7 +26,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
 
-@ApiTags('Products') // Group the endpoints under "Products" in Swagger UI
+@ApiTags('Products')
 @Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
@@ -123,5 +123,22 @@ export class ProductController {
   @ApiResponse({ status: 404, description: 'Product not found' })
   async delete(@Param('id') id: string): Promise<void> {
     return this.productService.delete(id);
+  }
+
+  @Post('sales')
+  @ApiOperation({ summary: 'Add sales and update product quantities' })
+  @ApiResponse({
+    status: 200,
+    description: 'Sales processed successfully.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Insufficient stock or invalid input',
+  })
+  async processSales(
+    @Body() salesItems: { productId: string; quantity: number }[],
+  ): Promise<{ message: string }> {
+    await this.productService.processSales(salesItems);
+    return { message: 'Sales processed successfully' };
   }
 }
