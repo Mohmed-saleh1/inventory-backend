@@ -90,7 +90,10 @@ export class ProductController {
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Update a product by its ID' })
+  @ApiOperation({
+    summary: 'Update a product by its ID, including image upload',
+  })
+  @ApiConsumes('multipart/form-data')
   @ApiParam({
     name: 'id',
     description: 'The ID of the product',
@@ -103,11 +106,31 @@ export class ProductController {
   })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads', // Save files to the uploads folder
+        filename: (req, file, callback) => {
+          const uniqueName = `${Date.now()}${extname(file.originalname)}`;
+          callback(null, uniqueName);
+        },
+      }),
+    }),
+  )
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
+    @UploadedFile() file?: Express.Multer.File,
   ): Promise<Product> {
-    return this.productService.update(id, updateProductDto);
+    const BASE_URL = process.env.DOMAIN;
+
+    // If an image file is uploaded, include its path in the update DTO
+    const imagePath = file ? `${BASE_URL}/uploads/${file.filename}` : undefined;
+    const updatedProductData = imagePath
+      ? { ...updateProductDto, image: imagePath }
+      : updateProductDto;
+
+    return this.productService.update(id, updatedProductData);
   }
 
   @Delete(':id')
