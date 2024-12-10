@@ -17,6 +17,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
 import { ProductService } from './products.service';
 import { Product } from './products.schema';
@@ -133,7 +134,38 @@ export class ProductController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Insufficient stock or invalid input',
+    description: 'Insufficient stock or invalid input.',
+  })
+  @ApiBody({
+    description: 'Array of sales items containing product ID and quantity.',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          productId: {
+            type: 'string',
+            description: 'The unique identifier of the product.',
+            example: '63f3d7b45134563d9d4f423b',
+          },
+          quantity: {
+            type: 'number',
+            description: 'The quantity of the product to be sold.',
+            example: 5,
+          },
+        },
+      },
+      example: [
+        {
+          productId: '63f3d7b45134563d9d4f423b',
+          quantity: 5,
+        },
+        {
+          productId: '63f3d7b45134563d9d4f123a',
+          quantity: 3,
+        },
+      ],
+    },
   })
   async processSales(
     @Body() salesItems: { productId: string; quantity: number }[],
