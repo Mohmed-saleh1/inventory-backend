@@ -55,7 +55,8 @@ export class ProductController {
     @Body() createProductDto: CreateProductDto,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<Product> {
-    const imagePath = `/uploads/${file.filename}`;
+    const BASE_URL = process.env.DOMAIN;
+    const imagePath = `${BASE_URL}/uploads/${file.filename}`;
     const productWithImage = { ...createProductDto, image: imagePath };
     return this.productService.create(productWithImage);
   }
