@@ -173,4 +173,52 @@ export class ProductController {
     await this.productService.processSales(salesItems);
     return { message: 'Sales processed successfully' };
   }
+
+  @Post('waste')
+  @ApiOperation({ summary: 'Add Waste and update product quantities' })
+  @ApiResponse({
+    status: 200,
+    description: 'Waste processed successfully.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Insufficient stock or invalid input.',
+  })
+  @ApiBody({
+    description: 'Array of Waste items containing product ID and quantity.',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          productId: {
+            type: 'string',
+            description: 'The unique identifier of the product.',
+            example: '63f3d7b45134563d9d4f423b',
+          },
+          quantity: {
+            type: 'number',
+            description: 'The quantity of the product to be sold.',
+            example: 5,
+          },
+        },
+      },
+      example: [
+        {
+          productId: '63f3d7b45134563d9d4f423b',
+          quantity: 5,
+        },
+        {
+          productId: '63f3d7b45134563d9d4f123a',
+          quantity: 3,
+        },
+      ],
+    },
+  })
+  async processWaste(
+    @Body() westedItems: { productId: string; quantity: number }[],
+  ): Promise<{ message: string }> {
+    await this.productService.processWaste(westedItems);
+    return { message: 'Wastes processed successfully' };
+  }
 }

@@ -89,4 +89,42 @@ export class ProductService {
       session.endSession();
     }
   }
+
+  async processWaste(
+    westedItems: { productId: string; quantity: number }[],
+  ): Promise<void> {
+    const session = await this.productModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      for (const item of westedItems) {
+        const product = await this.productModel
+          .findById(item.productId)
+          .session(session)
+          .exec();
+
+        if (!product) {
+          throw new NotFoundException(
+            `Product with ID ${item.productId} not found`,
+          );
+        }
+
+        if (product.quantity < item.quantity) {
+          throw new Error(
+            `Insufficient stock for product ${product.name}. Available: ${product.quantity}, Requested: ${item.quantity}`,
+          );
+        }
+
+        product.quantity -= item.quantity;
+        await product.save({ session });
+      }
+
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
 }
