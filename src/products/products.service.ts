@@ -127,4 +127,20 @@ export class ProductService {
       session.endSession();
     }
   }
+
+  async calcProfit(
+    salaries: { salary: number }[],
+    profit: number,
+  ): Promise<number> {
+    // Calculate the total sum of all salaries
+    const totalSalary = salaries.reduce(
+      (sum, employee) => sum + employee.salary,
+      0,
+    );
+
+    // Subtract the total salary from the profit
+    const remainingProfit = profit - totalSalary;
+
+    return remainingProfit;
+  }
 }

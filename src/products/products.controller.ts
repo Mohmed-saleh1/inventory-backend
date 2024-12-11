@@ -26,6 +26,10 @@ import { UpdateProductDto } from './dtos/update-product.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
+import {
+  CalcProfitRequestDto,
+  CalcProfitResponseDto,
+} from './dtos/calc-salary.dto';
 
 @ApiTags('Products')
 @Controller('products')
@@ -244,5 +248,38 @@ export class ProductController {
   ): Promise<{ message: string }> {
     await this.productService.processWaste(westedItems);
     return { message: 'Wastes processed successfully' };
+  }
+
+  @Post('calculate-profit')
+  @ApiOperation({
+    summary: 'Calculate remaining profit after deducting salaries',
+  })
+  @ApiBody({
+    description: 'Provide a list of salaries and the total profit',
+    type: CalcProfitRequestDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The remaining profit after subtracting salaries',
+    type: CalcProfitResponseDto,
+  })
+  async calculateProfit(
+    @Body() body: CalcProfitRequestDto,
+  ): Promise<CalcProfitResponseDto> {
+    const { salaries, profit } = body;
+
+    if (!salaries || !Array.isArray(salaries) || salaries.length === 0) {
+      throw new Error('Salaries array is required and cannot be empty.');
+    }
+
+    if (typeof profit !== 'number' || profit < 0) {
+      throw new Error('Profit must be a non-negative number.');
+    }
+
+    const remainingProfit = await this.productService.calcProfit(
+      salaries,
+      profit,
+    );
+    return { remainingProfit };
   }
 }
