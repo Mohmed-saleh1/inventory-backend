@@ -36,6 +36,20 @@ export class Product {
   })
   @Prop({ required: true })
   image: string;
+
+  @Prop({ default: 0 })
+  waste: number;
+
+  @Prop({ default: 0 })
+  sales: number;
+
+  @ApiProperty({
+    description: 'Available stock calculated as quantity - (sales + waste)',
+    example: 40,
+  })
+  get available(): number {
+    return this.quantity - (this.sales + this.waste);
+  }
 }
 
 export type ProductDocument = Product & Document;

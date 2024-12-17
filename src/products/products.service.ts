@@ -77,7 +77,7 @@ export class ProductService {
           );
         }
 
-        product.quantity -= item.quantity;
+        product.sales += item.quantity;
         await product.save({ session });
       }
 
@@ -115,7 +115,7 @@ export class ProductService {
           );
         }
 
-        product.quantity -= item.quantity;
+        product.waste += item.quantity;
         await product.save({ session });
       }
 
