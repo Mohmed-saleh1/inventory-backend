@@ -98,6 +98,7 @@ export class ProductService {
 
     try {
       for (const item of westedItems) {
+        console.log(item);
         const product = await this.productModel
           .findById(item.productId)
           .session(session)
@@ -116,6 +117,38 @@ export class ProductService {
         }
 
         product.waste += item.quantity;
+        await product.save({ session });
+      }
+
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  async processNewOrders(
+    newOrders: { productId: string; quantity: number }[],
+  ): Promise<void> {
+    const session = await this.productModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      for (const item of newOrders) {
+        const product = await this.productModel
+          .findById(item.productId)
+          .session(session)
+          .exec();
+
+        if (!product) {
+          throw new NotFoundException(
+            `Product with ID ${item.productId} not found`,
+          );
+        }
+
+        product.quantity += item.quantity;
         await product.save({ session });
       }
 

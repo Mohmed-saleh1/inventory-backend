@@ -10,6 +10,7 @@ import {
   HttpStatus,
   UseInterceptors,
   UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -30,6 +31,7 @@ import {
   CalcProfitRequestDto,
   CalcProfitResponseDto,
 } from './dtos/calc-salary.dto';
+import { NewOrderDto } from './dtos/new-order.dto';
 
 @ApiTags('Products')
 @Controller('products')
@@ -281,5 +283,33 @@ export class ProductController {
       profit,
     );
     return { remainingProfit };
+  }
+
+  @ApiOperation({ summary: 'Process new orders' })
+  @ApiResponse({ status: 201, description: 'Orders processed successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid input data.' })
+  @ApiResponse({ status: 404, description: 'Product not found.' })
+  @ApiBody({
+    type: [NewOrderDto],
+    description: 'An array of orders with product ID and quantity.',
+    examples: {
+      example1: {
+        summary: 'Valid Request',
+        value: [
+          { productId: '12345', quantity: 10 },
+          { productId: '67890', quantity: 5 },
+        ],
+      },
+    },
+  })
+  @Post('add-orders')
+  async processNewOrders(@Body() newOrders: NewOrderDto[]): Promise<void> {
+    if (!Array.isArray(newOrders) || newOrders.length === 0) {
+      throw new BadRequestException(
+        'Invalid input. Provide an array of orders.',
+      );
+    }
+
+    await this.productService.processNewOrders(newOrders);
   }
 }

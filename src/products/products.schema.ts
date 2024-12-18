@@ -2,7 +2,11 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 
-@Schema()
+@Schema({
+  toJSON: {
+    virtuals: true, // Enable virtual fields in JSON responses
+  },
+})
 export class Product {
   @ApiProperty({
     description: 'Category of the product',
@@ -37,9 +41,11 @@ export class Product {
   @Prop({ required: true })
   image: string;
 
+  @ApiProperty({ description: 'Waste quantity of the product', example: 0 })
   @Prop({ default: 0 })
   waste: number;
 
+  @ApiProperty({ description: 'Sales quantity of the product', example: 0 })
   @Prop({ default: 0 })
   sales: number;
 
@@ -47,10 +53,19 @@ export class Product {
     description: 'Available stock calculated as quantity - (sales + waste)',
     example: 40,
   })
-  get available(): number {
+  available?: number; // For Swagger documentation
+
+  // Virtual field: `available`
+  getAvailable(): number {
     return this.quantity - (this.sales + this.waste);
   }
 }
 
-export type ProductDocument = Product & Document;
+// Create the schema once
 export const ProductSchema = SchemaFactory.createForClass(Product);
+// Add the `available` virtual field
+ProductSchema.virtual('available').get(function () {
+  return this.quantity - (this.sales + this.waste);
+});
+
+export type ProductDocument = Product & Document;
