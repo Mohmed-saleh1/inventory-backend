@@ -3,8 +3,9 @@ import { Document } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Schema({
+  timestamps: true,
   toJSON: {
-    virtuals: true, // Enable virtual fields in JSON responses
+    virtuals: true,
   },
 })
 export class Product {
