@@ -9,6 +9,7 @@ import {
   HttpException,
   HttpStatus,
   Query,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -142,7 +143,7 @@ export class OrdersController {
     }
   }
 
-  @Delete(':id')
+  @Patch(':id')
   @ApiOperation({ summary: 'Delete an order by ID' })
   @ApiParam({
     name: 'id',
