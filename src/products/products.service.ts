@@ -17,7 +17,7 @@ export class ProductService {
 
   // Get all products
   async findAll(): Promise<Product[]> {
-    return this.productModel.find().exec();
+    return this.productModel.find({ isActive: true }).exec();
   }
 
   // Get a product by ID
@@ -46,12 +46,14 @@ export class ProductService {
 
   // Delete a product by ID
   async delete(id: string): Promise<void> {
-    const result = await this.productModel.findByIdAndDelete(id).exec();
+    const result = await this.productModel
+      .findByIdAndUpdate(id, { isActive: false }, { new: true })
+      .exec();
+
     if (!result) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
   }
-
   async processSales(
     salesItems: { productId: string; quantity: number }[],
   ): Promise<void> {

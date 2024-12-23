@@ -56,6 +56,9 @@ export class Product {
   })
   available?: number; // For Swagger documentation
 
+  @Prop({ default: true })
+  isActive?: boolean;
+
   // Virtual field: `available`
   getAvailable(): number {
     return this.quantity - (this.sales + this.waste);
