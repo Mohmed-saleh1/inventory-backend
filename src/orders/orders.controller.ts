@@ -8,8 +8,15 @@ import {
   Body,
   HttpException,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
 import { Order } from './order.schema';
 
@@ -20,8 +27,46 @@ export class OrdersController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new order' })
-  @ApiResponse({ status: 201, description: 'Order created successfully.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Order created successfully.',
+    type: Order,
+  })
   @ApiResponse({ status: 400, description: 'Invalid input data.' })
+  @ApiBody({
+    description: 'Order creation payload',
+    schema: {
+      type: 'object',
+      properties: {
+        record: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              productId: { type: 'string', description: 'Product ID' },
+              amount: {
+                type: 'number',
+                description: 'Quantity of the product',
+              },
+            },
+            required: ['productId', 'amount'],
+          },
+        },
+      },
+      required: ['record'],
+    },
+    examples: {
+      validPayload: {
+        summary: 'Valid payload example',
+        value: {
+          record: [
+            { productId: '63f1a4b7c25e1e4d4b8f0c20', amount: 2 },
+            { productId: '63f1a4b7c25e1e4d4b8f0c21', amount: 1 },
+          ],
+        },
+      },
+    },
+  })
   async create(@Body() orderDto: Partial<Order>): Promise<Order> {
     try {
       return await this.ordersService.create(orderDto);
@@ -31,13 +76,24 @@ export class OrdersController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Retrieve all orders with product details' })
+  @ApiOperation({ summary: 'Retrieve all orders with pagination' })
   @ApiResponse({
     status: 200,
-    description: 'List of all orders with product details.',
+    description: 'List of all orders with pagination metadata',
   })
-  async findAll(): Promise<Order[]> {
-    return this.ordersService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ): Promise<{ data: Order[]; total: number; page: number; limit: number }> {
+    const result = await this.ordersService.findAll(
+      Number(page),
+      Number(limit),
+    );
+    return {
+      ...result,
+      page: Number(page),
+      limit: Number(limit),
+    };
   }
 
   @Get(':id')

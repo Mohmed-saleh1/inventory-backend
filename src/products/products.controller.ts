@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -68,14 +69,24 @@ export class ProductController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Retrieve all products' })
+  @ApiOperation({ summary: 'Retrieve all products with pagination' })
   @ApiResponse({
     status: 200,
-    description: 'List of all products',
-    type: [Product],
+    description: 'List of all products with pagination metadata',
   })
-  async findAll(): Promise<Product[]> {
-    return this.productService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ): Promise<{ data: Product[]; total: number; page: number; limit: number }> {
+    const result = await this.productService.findAll(
+      Number(page),
+      Number(limit),
+    );
+    return {
+      ...result,
+      page: Number(page),
+      limit: Number(limit),
+    };
   }
 
   @Get(':id')

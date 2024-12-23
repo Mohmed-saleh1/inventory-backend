@@ -14,8 +14,24 @@ export class OrdersService {
     return await order.save();
   }
 
-  async findAll(): Promise<Order[]> {
-    return this.orderModel.find().populate('record.productId').exec();
+  async findAll(
+    page: number,
+    limit: number,
+  ): Promise<{ data: Order[]; total: number }> {
+    const skip = (page - 1) * limit;
+
+    // Retrieve paginated orders and the total count
+    const [data, total] = await Promise.all([
+      this.orderModel
+        .find()
+        .populate('record.productId') // Include population for related fields
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.orderModel.countDocuments().exec(),
+    ]);
+
+    return { data, total };
   }
 
   async findById(id: string): Promise<Order> {

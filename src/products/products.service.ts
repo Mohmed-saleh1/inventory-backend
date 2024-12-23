@@ -16,8 +16,17 @@ export class ProductService {
   }
 
   // Get all products
-  async findAll(): Promise<Product[]> {
-    return this.productModel.find({ isActive: true }).exec();
+  async findAll(
+    page: number,
+    limit: number,
+  ): Promise<{ data: Product[]; total: number }> {
+    const skip = (page - 1) * limit;
+    const [data, total] = await Promise.all([
+      this.productModel.find({ isActive: true }).skip(skip).limit(limit).exec(),
+      this.productModel.countDocuments({ isActive: true }).exec(),
+    ]);
+
+    return { data, total };
   }
 
   // Get a product by ID
