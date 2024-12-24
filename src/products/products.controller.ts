@@ -12,6 +12,7 @@ import {
   UploadedFile,
   BadRequestException,
   Query,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -150,7 +151,7 @@ export class ProductController {
     return this.productService.update(id, updatedProductData);
   }
 
-  @Delete(':id')
+  @Patch(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a product by its ID' })
   @ApiParam({
