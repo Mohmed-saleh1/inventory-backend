@@ -24,7 +24,7 @@ export class OrdersService {
     const [data, total] = await Promise.all([
       this.orderModel
         .find()
-        .populate('record.productId') // Include population for related fields
+        .populate('record.productId')
         .skip(skip)
         .limit(limit)
         .exec(),
